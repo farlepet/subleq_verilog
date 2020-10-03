@@ -1,43 +1,47 @@
-`timescale 1ns/10ps
-
 /* Register Card
  * Contains Instruction Pointer and temporary pointer registers */
 
-module register_card(
+`include "src/config.v"
+
+module register_card
+#(
+    parameter DATAWIDTH = `DATAWIDTH,
+    parameter CTRLWIDTH = `CTRLWIDTH
+)
+(
 /* Data Bus */
-    inout [(`DATAWIDTH - 1):0] data,
+    input  [DATAWIDTH-1:0] data,
 /* Address Bus */
-    input [(`DATAWIDTH - 1):0] address,
+    output [DATAWIDTH-1:0] addr,
 /* Control Bus */
-    input [(`CTRLWIDTH - 1):0] ctrl,
+    input  [CTRLWIDTH-1:0] ctrl,
 /* Clock input */
-    input        clk);
+    input                  clk
+);
 
-    reg [(`DATAWIDTH - 1):0] IP;
-    reg [(`DATAWIDTH - 1):0] A;
-    reg [(`DATAWIDTH - 1):0] B;
-    reg [(`DATAWIDTH - 1):0] T;
+    reg [DATAWIDTH-1:0] PC = 1;
+    reg [DATAWIDTH-1:0] A  = 0;
+    reg [DATAWIDTH-1:0] B  = 0;
 
-    reg [(`DATAWIDTH - 1):0] dataOut;
+    reg [DATAWIDTH-1:0] dataOut = 0;
 
-    assign data = ctrl[9] ? dataOut : (`DATAWIDTH)'bz;
+    assign addr = (|ctrl[`CTRL_REG_RD+1:`CTRL_REG_RD]) ? dataOut : {DATAWIDTH{1'bz}};
 
     always @(negedge clk) begin
-        if(ctrl[6]) begin // Write select
-            case(ctrl[5:4])
-                0: IP <= data;
-                1: B  <= data;
-                2: A  <= data;
-                3: T  <= data;
-            endcase
-        end
+        case(ctrl[(`CTRL_REG_WR+1):`CTRL_REG_WR])
+            `REG_PC: PC <= data;
+            `REG_A:  A  <= data;
+            `REG_B:  B  <= data;
+        endcase
 
-        if(ctrl[9]) begin // Read select
-            assign dataOut = (ctrl[8:7] == 0) ? IP :
-                             (ctrl[8:7] == 1) ? B  :
-                             (ctrl[8:7] == 2) ? A  :
-                             (ctrl[8:7] == 3) ? T  : (`DATAWIDTH)'bz;
-        end
+        case(ctrl[(`CTRL_REG_RD+1):`CTRL_REG_RD])
+            `REG_NONE: dataOut <= {DATAWIDTH{1'b0}};
+            `REG_PC:   dataOut <= PC;
+            `REG_A:    dataOut <= A;
+            `REG_B:    dataOut <= B;
+        endcase
+
+        $display("PC: %04X, A: %04X, B: %04X", PC, A, B);
     end
 
 endmodule
