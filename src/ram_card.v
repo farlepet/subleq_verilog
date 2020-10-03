@@ -31,6 +31,7 @@ module ram_card
     initial ram[5] = 0;
     initial ram[6] = 1111;
     initial ram[7] = 4444;
+    initial ram[8] = 0;
 
     reg read_ready = 0;
     reg write_done = 0;

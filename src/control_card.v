@@ -163,6 +163,64 @@ module control_card
                     end
                 endcase
             end
+            `CSTATE_BRANCH: begin
+                case(sstate)
+                    0: begin
+                        /* Load PC to ADDR */
+                        reg_rd <= `REG_PC;
+                        sstate <= 1;
+                    end
+                    1: begin
+                        /* Read from memory */
+                        rd_req <= 1;
+                        sstate <= 2;
+                    end
+                    2: begin
+                        /* Store DATA to PC */
+                        if(ctrl[`CTRL_RD_READY]) begin
+                            reg_wr <= `REG_PC;
+                            sstate <= 3;
+                        end
+                    end
+                    3: begin
+                        /* End */
+                        reg_wr <= `REG_NONE;
+                        rd_req <= 0;
+                        sstate <= 0;
+                        cstate <= `CSTATE_READA;
+                    end
+                endcase
+            end
+            `CSTATE_NEXTI: begin
+                case(sstate)
+                    0: begin
+                        /* Load PC to ADDR */
+                        reg_rd <= `REG_PC;
+                        sstate <= 1;
+                    end
+                    1: begin
+                        /* Write PC to ALU A */
+                        alu_mode <= 0;
+                        alu_ld   <= 2'b01;
+                        alu_read <= 1;
+                        sstate   <= 2;
+                    end
+                    2: begin
+                        /* Increment ALU A */
+                        alu_ld   <= 0;
+                        alu_read <= 1;
+                        sstate   <= 3;
+                    end
+                    3: begin
+                        /* Store DATA to PC */
+                        if(ctrl[`CTRL_ALU_DONE]) begin
+                            reg_wr <= `REG_PC;
+                            sstate <= 0;
+                            cstate <= `CSTATE_READA;
+                        end
+                    end
+                endcase
+            end
         endcase
     end
 endmodule
