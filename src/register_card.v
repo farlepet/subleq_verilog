@@ -19,7 +19,7 @@ module register_card
     input                  clk
 );
 
-    reg [DATAWIDTH-1:0] PC = 1;
+    reg [DATAWIDTH-1:0] PC = 0;
     reg [DATAWIDTH-1:0] A  = 0;
     reg [DATAWIDTH-1:0] B  = 0;
 
@@ -41,7 +41,7 @@ module register_card
             `REG_B:    dataOut <= B;
         endcase
 
-        $display("PC: %04X, A: %04X, B: %04X", PC, A, B);
+        $display("[REG] PC: %04X, A: %04X, B: %04X", PC, A, B);
     end
 
 endmodule

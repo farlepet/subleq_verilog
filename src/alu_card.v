@@ -44,6 +44,8 @@ module alu_card
             end
             result_clean <= 0;
         end
+        
+        $display("[ALU] A: %04X, B: %04X", A, B);
     end
 
     always @(negedge result_clean) begin

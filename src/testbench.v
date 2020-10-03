@@ -16,7 +16,7 @@ module driver;
 
     initial begin
             $display("ADDR, DATA,           CTRL, CLK");
-        repeat (32) begin
+        repeat (48) begin
             $display("%04X, %04X, %014B, %d",
                      addr, data, ctrl, clk);
             #5;

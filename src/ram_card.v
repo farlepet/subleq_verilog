@@ -23,9 +23,14 @@ module ram_card
     reg [DATAWIDTH-1:0] ram [RAMSIZE-1:0];
     reg [DATAWIDTH-1:0] read_result       = 0;
 
-    initial ram[0] = 1234;
-    initial ram[1] = 5678;
-    initial ram[2] = 9012;
+    initial ram[0] = 6;
+    initial ram[1] = 7;
+    initial ram[2] = 3;
+    initial ram[3] = 8;
+    initial ram[4] = 8;
+    initial ram[5] = 0;
+    initial ram[6] = 1111;
+    initial ram[7] = 4444;
 
     reg read_ready = 0;
     reg write_done = 0;

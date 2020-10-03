@@ -51,7 +51,7 @@ module control_card
     assign ctrl[`CTRL_ALU_READ]              = alu_read;
 
     always @(negedge clk) begin
-        $display("CSTATE: %d, SSTATE: %d", cstate, sstate);
+        $display("[CTL] CSTATE: %d, SSTATE: %d", cstate, sstate);
         case(cstate)
             `CSTATE_INIT: begin
                 cstate <= `CSTATE_ROMCPY;
@@ -62,7 +62,7 @@ module control_card
                 cstate <= `CSTATE_READA;
                 sstate <= 0;
             end
-            `CSTATE_READA, `CSTATE_READB: begin
+            `CSTATE_READA,`CSTATE_READB: begin
                 case(sstate)
                     0: begin
                         /* Load PC to ADDR */
@@ -105,6 +105,44 @@ module control_card
                             sstate <= 0;
                             cstate <= cstate + 1;
                         end
+                    end
+                endcase
+            end
+            `CSTATE_PTRA,`CSTATE_PTRB: begin
+                case(sstate)
+                    0: begin
+                        /* Load A to ADDR */
+                        alu_read <= 0;
+                        alu_ld   <= 0;
+                        rd_req   <= 0;
+                        reg_wr   <= `REG_NONE;
+                        reg_rd   <= (cstate == `CSTATE_PTRA) ? `REG_A : `REG_B;
+                        sstate   <= 1;
+                    end
+                    1: begin
+                        /* Read from memory */
+                        rd_req <= 1;
+                        sstate <= 2;
+                    end
+                    2: begin
+                        /* Store DATA to ALU A */
+                        if(ctrl[`CTRL_RD_READY]) begin
+                            alu_mode <= 1;
+                            alu_ld   <= (cstate == `CSTATE_PTRA) ? 2'b01 : 2'b10;
+                            sstate   <= 0;
+                            cstate   <= cstate + 1;
+                        end
+                    end
+                endcase
+            end
+            `CSTATE_SUB: begin
+                case(sstate)
+                    0: begin
+                        /* Initiate subtraction */
+                        alu_ld <= 0;
+                        reg_rd <= 0;
+                        rd_req <= 0;
+                        sstate <= 1;
                     end
                 endcase
             end
