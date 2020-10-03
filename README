@@ -1,0 +1,24 @@
+SUBLEQ Verilog CPU
+==================
+
+Design Choice
+-------------
+This particular implementation of SUBLEQ is designed to be both simple to
+understand, and relatively simple to potentially build from relatively common
+parts. Thus, effeciency was not a main goal. There is no pipelining, and all
+data travels over the shared data bus.
+
+The implementation is incredibally inneffecient, with each instrucion taking ~25
+clock cycles, ignoring potential ALU and memory r/w delays. The plan is to
+simplify the control mechanism somewhat, and cement the behaviour of the various
+modules, and begin testing on an FPGA, and eventually convert some portions,
+especially the control module, to use more explicit logic, rather than the
+current semi-procedural approach, to aide in translation to a physical system.
+
+The separation of modules, and their shared bus structure, was done with the
+intention to allow a backplane-based design where various cards (ALU, CONTROL,
+etc...) could be slotted into the shared bus, and allows for expandability.
+
+Peripherals can be interfaced with by giving them an address or address range
+that they respond to, and ensuring they properly use the RD_REQ, RD_READY,
+WR_REQ, and WR_DONE lines.
