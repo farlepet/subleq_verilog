@@ -139,10 +139,27 @@ module control_card
                 case(sstate)
                     0: begin
                         /* Initiate subtraction */
-                        alu_ld <= 0;
-                        reg_rd <= 0;
-                        rd_req <= 0;
-                        sstate <= 1;
+                        alu_ld   <= 0;
+                        reg_rd   <= `REG_B;
+                        rd_req   <= 0;
+                        alu_read <= 1;
+                        sstate   <= 1;
+                    end
+                    1: begin
+                        /* Store result */
+                        if(ctrl[`CTRL_ALU_DONE]) begin
+                            wr_req <= 1;
+                            sstate <= 2;
+                        end
+                    end
+                    2: begin
+                        /* Branch on result */
+                        if(ctrl[`CTRL_WR_DONE]) begin
+                            wr_req   <= 0;
+                            alu_read <= 0;
+                            sstate   <= 0;
+                            cstate   <= ctrl[`CTRL_ALU_LEZ] ? `CSTATE_BRANCH : `CSTATE_NEXTI;
+                        end
                     end
                 endcase
             end

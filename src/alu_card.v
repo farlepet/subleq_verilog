@@ -24,7 +24,6 @@ module alu_card
     reg [DATAWIDTH-1:0] result = 0;
 
     reg result_clean = 1;
-    reg result_lez   = 0;
 
     wire [DATAWIDTH-1:0] src = ctrl[`CTRL_ALU_MODE] ? data : addr;
 
@@ -32,7 +31,7 @@ module alu_card
     assign data = ctrl[`CTRL_ALU_READ] ? result : {DATAWIDTH{1'bz}};
 
     assign ctrl[`CTRL_ALU_DONE] = result_clean;
-    assign ctrl[`CTRL_ALU_LEZ]  = result_lez;
+    assign ctrl[`CTRL_ALU_LEZ]  = (result[DATAWIDTH-1] || !(|result));
 
     always @(negedge clk) begin
         if(ctrl[`CTRL_ALU_LD+1:`CTRL_ALU_LD]) begin
@@ -45,19 +44,17 @@ module alu_card
             result_clean <= 0;
         end
         
-        $display("[ALU] A: %04X, B: %04X", A, B);
+        $display("[ALU] A: %04X, B: %04X, RES: %04X", A, B, result);
     end
 
     always @(negedge result_clean) begin
         if(ctrl[`CTRL_ALU_MODE]) begin
             /* TODO: Make the logic behind the operation explicit */
             result       <= (B - A);
-            result_lez   <= ((result[DATAWIDTH-1] == 1) || (result == 0));
             result_clean <= 1;
         end else begin
             /* TODO: Make the logic behind the operation explicit */
             result       <= A + 1;
-            result_lez   <= 0;
             result_clean <= 1;
         end
     end
